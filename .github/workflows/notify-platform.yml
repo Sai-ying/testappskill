@@ -2,16 +2,20 @@ name: Notify platform on push
 on:
   push:
     branches: ["main"]
+  workflow_dispatch:
+
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger redeploy
+      - name: Prepare payload and sign
         env:
           WEBHOOK_SECRET: ${{ secrets.PLATFORM_WEBHOOK_SECRET }}
         run: |
-          PAYLOAD='{"hosting_id":106,"branch":"${{ github.ref_name }}","commit":"${{ github.sha }}","ref":"${{ github.ref }}"}'
+          PAYLOAD=$(jq -nc --argjson hosting_id 106 --arg branch "${{ github.ref_name }}" --arg commit "${{ github.sha }}" --arg ref "${{ github.ref }}" '{"hosting_id":$hosting_id,"branch":$branch,"commit":$commit,"ref":$ref}')
           SIG="sha256=$(printf '%s' "$PAYLOAD" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" | awk '{print $2}')"
+          echo "Payload: $PAYLOAD"
+          echo "Signature: $SIG"
           curl -s -X POST https://www.vco2.be/webhook.php \
             -H "Content-Type: application/json" \
             -H "X-Hub-Signature-256: $SIG" \
