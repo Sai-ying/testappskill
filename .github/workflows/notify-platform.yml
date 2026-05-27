@@ -10,7 +10,7 @@ jobs:
         env:
           WEBHOOK_SECRET: ${{ secrets.PLATFORM_WEBHOOK_SECRET }}
         run: |
-          PAYLOAD='{"hosting_id":41,"branch":"${{ github.ref_name }}","commit":"${{ github.sha }}","ref":"${{ github.ref }}"}'
+          PAYLOAD='{"hosting_id":106,"branch":"${{ github.ref_name }}","commit":"${{ github.sha }}","ref":"${{ github.ref }}"}'
           SIG="sha256=$(printf '%s' "$PAYLOAD" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" | awk '{print $2}')"
           curl -s -X POST https://www.vco2.be/webhook.php \
             -H "Content-Type: application/json" \
